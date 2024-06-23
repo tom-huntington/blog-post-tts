@@ -9,10 +9,9 @@ tts = TTS(model_name="tts_models/en/vctk/vits", gpu=True)
 sample_rate = tts.synthesizer.output_sample_rate
 
 
-# In[2]:
+# In[1]:
 
 
-import requests
 from bs4 import BeautifulSoup
 import sys
 from urllib.parse import urlparse
@@ -22,23 +21,29 @@ from urllib.parse import urlparse
 
 
 if 'ipykernel' in sys.modules:
-    url = "https://www.elbeno.com/blog/?p=1725"
+    pathOrUrl = "https://www.elbeno.com/blog/?p=1725"
 else:
-    url = sys.argv[1]
+    pathOrUrl = sys.argv[1]
 
-parsed_url = urlparse(url)
-path = parsed_url.path
+if pathOrUrl.startswith('http'):
+    parsed_url = urlparse(pathOrUrl)
+    path = parsed_url.path
 
-# Split the path by slashes and take the last element
-if path[-1] == '/':
-    path = path[:-1]
+    # Split the path by slashes and take the last element
+    if path[-1] == '/':
+        path = path[:-1]
 
-output_file_stem = path.split('/')[-1]
+    output_file_stem = path.split('/')[-1]
 
-# Fetch the HTML content
-response = requests.get(url)
-html_content = response.text
-print(html_content)
+    # Fetch the HTML content
+    import requests
+    response = requests.get(pathOrUrl)
+    html_content = response.text
+else:
+    from pathlib import Path
+    output_file_stem = Path(pathOrUrl).stem
+    with open(pathOrUrl) as f:
+        html_content = f.read()
 
 
 # In[5]:
@@ -46,13 +51,16 @@ print(html_content)
 
 # Parse the HTML content with Beautiful Soup
 soup = BeautifulSoup(html_content, 'html.parser')
-
+article = soup.find('article')
+if not article:
+    print("no atricle element")
+    exit(1)
 # Find and remove all <code> elements
-for code_tag in soup.find_all('pre'):
+for code_tag in article.find_all('pre'):
     code_tag.decompose()
 
 # Extract text and remove leading/trailing whitespace
-text_content = soup.get_text(separator='\n', strip=True)
+text_content = article.get_text(separator='\n', strip=True)
 print(text_content)
 
 
