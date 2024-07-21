@@ -1,15 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
-
-
-from TTS.api import TTS
-tts = TTS(model_name="tts_models/en/vctk/vits", gpu=True)
-sample_rate = tts.synthesizer.output_sample_rate
-
-
-# In[1]:
+# In[2]:
 
 
 from bs4 import BeautifulSoup
@@ -17,13 +9,18 @@ import sys
 from urllib.parse import urlparse
 
 
-# In[12]:
+# In[18]:
 
 
 if 'ipykernel' in sys.modules:
-    pathOrUrl = "https://www.elbeno.com/blog/?p=1725"
-else:
-    pathOrUrl = sys.argv[1]
+    sys.argv = [
+        sys.argv[0],
+        "https://fiddlersgreene.substack.com/p/the-dissident-right-and-its-discontents",
+        "div",
+        "available-content",
+    ]
+
+pathOrUrl = sys.argv[1]
 
 if pathOrUrl.startswith('http'):
     parsed_url = urlparse(pathOrUrl)
@@ -46,15 +43,31 @@ else:
         html_content = f.read()
 
 
-# In[5]:
+# In[19]:
 
 
 # Parse the HTML content with Beautiful Soup
 soup = BeautifulSoup(html_content, 'html.parser')
-article = soup.find('article')
+
+article = soup.find(sys.argv[2]) if len(sys.argv) < 3 else soup.find(sys.argv[2], class_=sys.argv[3])
+# article = soup.find(sys.argv[2], class_=sys.argv[3])
+
 if not article:
     print("no atricle element")
+    body = soup.body
+    # for header in body.find_all('script'):
+    #     header.decompose()
+    
+    # for script in body.find_all('script'):
+    #     script.decompose()
+
+    # for svg in body.find_all('svg'):
+    #     svg.decompose()
+
+    print(body)
+    print(sys.argv[1:])
     exit(1)
+
 # Find and remove all <code> elements
 for code_tag in article.find_all('pre'):
     code_tag.decompose()
@@ -68,6 +81,9 @@ print(text_content)
 
 
 from nltk.data import load
+from TTS.api import TTS
+tts = TTS(model_name="tts_models/en/vctk/vits", gpu=True)
+sample_rate = tts.synthesizer.output_sample_rate
 
 
 # In[7]:
