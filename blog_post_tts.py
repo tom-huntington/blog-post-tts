@@ -69,7 +69,7 @@ if not article:
     exit(1)
 
 # Find and remove all <code> elements
-for code_tag in article.find_all(['pre', 'math']):
+for code_tag in article.find_all(['pre', 'math', 'code']):
     code_tag.decompose()
 
 # Extract text and remove leading/trailing whitespace
