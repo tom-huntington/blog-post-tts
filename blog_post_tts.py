@@ -49,7 +49,11 @@ else:
 # Parse the HTML content with Beautiful Soup
 soup = BeautifulSoup(html_content, 'html.parser')
 
-article = soup.find(sys.argv[2]) if len(sys.argv) < 4 else soup.find(sys.argv[2], class_=sys.argv[3])
+print(f"{len(sys.argv)=}")
+if len(sys.argv) == 2:
+    article = soup
+else:
+    article = soup.find(sys.argv[2]) if len(sys.argv) < 4 else soup.find(sys.argv[2], class_=sys.argv[3])
 # article = soup.find(sys.argv[2], class_=sys.argv[3])
 
 if not article:
