@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[2]:
+# In[1]:
 
 
 from bs4 import BeautifulSoup
@@ -9,15 +9,13 @@ import sys
 from urllib.parse import urlparse
 
 
-# In[18]:
+# In[10]:
 
 
 if 'ipykernel' in sys.modules:
     sys.argv = [
         sys.argv[0],
-        "https://fiddlersgreene.substack.com/p/the-dissident-right-and-its-discontents",
-        "div",
-        "available-content",
+        "/mnt/c/Users/tynda/Downloads/Russell, James C - The Germanization of early medieval Christianity _ a sociohistorical approach to religious transformation-Oxford University Press (1994).epub",
     ]
 
 pathOrUrl = sys.argv[1]
@@ -38,12 +36,27 @@ if pathOrUrl.startswith('http'):
     html_content = response.text
 else:
     from pathlib import Path
-    output_file_stem = Path(pathOrUrl).stem
+    path = Path(pathOrUrl)
+    output_file_stem = path.stem
     with open(pathOrUrl) as f:
-        html_content = f.read()
+        print(sys.version)
+        print(f'{path.suffix=}')
+        if path.suffix == '.epub':
+            from ebooklib import epub
+            import ebooklib
+            book = epub.read_epub(pathOrUrl)
+            text = []
+            for item in book.get_items():
+                if item.get_type() == ebooklib.ITEM_DOCUMENT:
+                    soup = BeautifulSoup(item.get_content(), 'html.parser')
+                    text.append(soup.get_text())
+        
+            html_content = '\n'.join(text)
+        else:
+            html_content = f.read()
 
 
-# In[19]:
+# In[11]:
 
 
 # Parse the HTML content with Beautiful Soup
@@ -81,7 +94,7 @@ text_content = article.get_text(separator='\n', strip=True)
 print(text_content)
 
 
-# In[6]:
+# In[12]:
 
 
 from nltk.data import load
@@ -90,7 +103,7 @@ tts = TTS(model_name="tts_models/en/vctk/vits", gpu=True)
 sample_rate = tts.synthesizer.output_sample_rate
 
 
-# In[7]:
+# In[13]:
 
 
 tokenizer = load(f"tokenizers/punkt/english.pickle")
