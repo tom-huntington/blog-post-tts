@@ -1,24 +1,39 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[2]:
 
 
 from bs4 import BeautifulSoup
 import sys
 from urllib.parse import urlparse
+import argparse
 
 
-# In[10]:
+# In[18]:
 
 
 if 'ipykernel' in sys.modules:
     sys.argv = [
         sys.argv[0],
-        "/mnt/c/Users/tynda/Downloads/Russell, James C - The Germanization of early medieval Christianity _ a sociohistorical approach to religious transformation-Oxford University Press (1994).epub",
+        "ola.html",
+        "--element", "div",
+        "--id", "bookchapter",
     ]
 
-pathOrUrl = sys.argv[1]
+parser = argparse.ArgumentParser(description="Process a file and extract information based on optional HTML attributes.")
+
+# Positional argument (required)
+parser.add_argument("file_name", type=str, help="The path to the input file.")
+
+# Optional arguments
+parser.add_argument("--element", type=str, help="Specify the HTML element to search for (e.g., div, p, span).")
+parser.add_argument("--id", type=str, help="Specify the HTML id attribute to search for.")
+parser.add_argument("--class", type=str, dest="class_", help="Specify the HTML class attribute to search for. (Note: 'class' is a Python keyword, so we use 'dest' to avoid conflict.)")
+
+args = parser.parse_args()
+
+pathOrUrl = args.file_name
 
 if pathOrUrl.startswith('http'):
     parsed_url = urlparse(pathOrUrl)
@@ -55,19 +70,20 @@ else:
         else:
             html_content = f.read()
 
+html_content
 
-# In[11]:
+
+# In[19]:
 
 
 # Parse the HTML content with Beautiful Soup
 soup = BeautifulSoup(html_content, 'html.parser')
 
 print(f"{len(sys.argv)=}")
-if len(sys.argv) == 2:
+if args.element is None:
     article = soup
 else:
-    article = soup.find(sys.argv[2]) if len(sys.argv) < 4 else soup.find(sys.argv[2], class_=sys.argv[3])
-# article = soup.find(sys.argv[2], class_=sys.argv[3])
+    article = soup.find(args.element, class_=args.class_, id=args.id)
 
 if not article:
     print("no atricle element")
@@ -94,7 +110,7 @@ text_content = article.get_text(separator='\n', strip=True)
 print(text_content)
 
 
-# In[12]:
+# In[20]:
 
 
 from nltk.data import load
@@ -103,7 +119,7 @@ tts = TTS(model_name="tts_models/en/vctk/vits", gpu=True)
 sample_rate = tts.synthesizer.output_sample_rate
 
 
-# In[13]:
+# In[21]:
 
 
 tokenizer = load(f"tokenizers/punkt/english.pickle")
@@ -111,7 +127,7 @@ sentences = tokenizer.tokenize(text_content)
 print(sentences)
 
 
-# In[13]:
+# In[22]:
 
 
 import subprocess
